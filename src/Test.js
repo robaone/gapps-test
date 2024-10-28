@@ -1,19 +1,31 @@
 function Test(testClass) {
-    this.tests = testClass;
+    const tests = testClass;
     this.run = function () {
-        var objectKeys = Object.keys(this.tests);
-        var propertyNames = Object.getOwnPropertyNames(Object.getPrototypeOf(this.tests));
+        const results = { passed: 0, failed: 0, errors: [] };
+        const objectKeys = Object.keys(tests);
+        const propertyNames = Object.getOwnPropertyNames(Object.getPrototypeOf(tests));
 
         const keys = [...new Set([...objectKeys, ...propertyNames])];
 
         keys.filter(key => key.startsWith('test_')).forEach(k => {
-            const before_index = keys.findIndex(key => key == 'before');
-            if (before_index > -1) this.tests['before']();
-            Logger.log(`Running test: ${k.substring(5)}`);
-            this.tests[k]();
-            const after_index = keys.findIndex(key => key == 'after');
-            if (after_index > -1) this.tests['after']();
+            try {
+                if (typeof tests.before === 'function') tests.before();
+                Logger.log(`Running test: ${k.substring(5)}`);
+                tests[k]();
+                results.passed++;
+            } catch (error) {
+                results.failed++;
+                results.errors.push(`${k}: ${error.message || error}`);
+                Logger.log(`Test failed: ${k} - ${error.message || error}`);
+            } finally {
+                try {
+                    if (typeof tests.after === 'function') tests.after();
+                } catch (error) {
+                    Logger.log(`After hook failed: ${error.message || error}`);
+                }
+            }
         });
+        return results;
     }
 };
 
