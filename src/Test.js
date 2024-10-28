@@ -25,6 +25,9 @@ function Test(testClass) {
                 }
             }
         });
+        Logger.log(`${results.passed} tests passed`);
+        Logger.log(`${results.failed} tests failed`);
+        results.errors.forEach((error) => Logger.log(error));
         return results;
     }
 };
@@ -85,7 +88,7 @@ class ExampleTest {
         Logger.log('GIVEN');
         Logger.log('WHEN');
         Logger.log('THEN');
-        Assert.isTrue(true);
+        Assert.equals(true,false);
     }
     test_testName2() {
         // This is a test
