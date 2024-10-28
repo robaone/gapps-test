@@ -4,6 +4,10 @@
 
 This repository contains a simple yet functional testing framework designed for JavaScript. It provides an easy-to-use interface for defining and running unit tests, featuring hooks for test setup (`before`) and teardown (`after`) as well as a series of assertion methods to validate your test results. This can be particularly helpful when building quick tests for Google Apps Script projects.
 
+- [Tutorial](Tutorial.md)
+- [Reference](Reference.md)
+- [Discussion](Discussion.md)
+
 ## How It Works
 
 - The `Test` class is used to execute test cases from a given test class.
