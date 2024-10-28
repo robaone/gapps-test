@@ -1,64 +1,69 @@
 function Test(testClass) {
-    this.tests = testClass;
+    const tests = testClass;
     this.run = function () {
-        var objectKeys = Object.keys(this.tests);
-        var propertyNames = Object.getOwnPropertyNames(Object.getPrototypeOf(this.tests));
+        const results = { passed: 0, failed: 0, errors: [] };
+        const objectKeys = Object.keys(tests);
+        const propertyNames = Object.getOwnPropertyNames(Object.getPrototypeOf(tests));
 
         const keys = [...new Set([...objectKeys, ...propertyNames])];
 
         keys.filter(key => key.startsWith('test_')).forEach(k => {
-            const before_index = keys.findIndex(key => key == 'before');
-            if (before_index > -1) this.tests['before']();
-            Logger.log(`Running test: ${k.substring(5)}`);
-            this.tests[k]();
-            const after_index = keys.findIndex(key => key == 'after');
-            if (after_index > -1) this.tests['after']();
+            try {
+                if (typeof tests.before === 'function') tests.before();
+                Logger.log(`Running test: ${k.substring(5)}`);
+                tests[k]();
+                results.passed++;
+            } catch (error) {
+                results.failed++;
+                results.errors.push(`${k}: ${error.message || error}`);
+                Logger.log(`Test failed: ${k} - ${error.message || error}`);
+            } finally {
+                try {
+                    if (typeof tests.after === 'function') tests.after();
+                } catch (error) {
+                    Logger.log(`After hook failed: ${error.message || error}`);
+                }
+            }
         });
+        return results;
     }
 };
 
 var Assert = {
-    'isTrue': function (value) {
-        if (value != true) {
-            throw 'Value is not true';
+    isTrue(value) {
+        if (value !== true) {
+            throw new Error('Value is not true');
         }
     },
-    'match': function (expected, actual) {
+    match(expected, actual) {
         if (expected != actual) {
-            throw 'Expected value is (' + JSON.stringify(expected) + ') but is (' + JSON.stringify(actual) + ')';
+            throw new Error(`Expected value is (${JSON.stringify(expected)}) but is (${JSON.stringify(actual)})`);
         }
     },
-    'equals': (expected, actual) => {
+    equals(expected, actual) {
         if (expected !== actual) {
             throw new Error(`Assertion failed: expected ${expected}, but got ${actual}`);
         }
     },
-    'deepEquals': function (array1, array2) {
-        const result = (() => {
-            if (array1.length !== array2.length) {
-                return false;
-            }
+    deepEquals(array1, array2) {
+        if (!Array.isArray(array1) || !Array.isArray(array2)) {
+            throw new Error('Both arguments must be arrays');
+        }
+        if (array1.length !== array2.length) {
+            throw new Error(`Arrays have different lengths: ${array1.length} !== ${array2.length}`);
+        }
 
-            for (var i = 0; i < array1.length; i++) {
-                if (Array.isArray(array1[i]) && Array.isArray(array2[i])) {
-                    if (!Assert.deepEquals(array1[i], array2[i])) {
-                        return false;
-                    }
-                } else {
-                    const array1_str = JSON.stringify(array1[i]);
-                    const array2_str = JSON.stringify(array2[i]);
-                    if (array1_str !== array2_str) {
-                        return false;
-                    }
+        for (let i = 0; i < array1.length; i++) {
+            if (Array.isArray(array1[i]) && Array.isArray(array2[i])) {
+                this.deepEquals(array1[i], array2[i]);
+            } else {
+                const array1Str = JSON.stringify(array1[i]);
+                const array2Str = JSON.stringify(array2[i]);
+                if (array1Str !== array2Str) {
+                    throw new Error(`Arrays differ at index ${i}: ${array1Str} !== ${array2Str}`);
                 }
             }
-
-            return true;
-        })();
-        if (!result) {
-            throw `Expected value is (${JSON.stringify(array1)}) but is (${JSON.stringify(array2)})`;
         }
-        return result;
     }
 };
 
