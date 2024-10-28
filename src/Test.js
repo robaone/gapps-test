@@ -18,47 +18,40 @@ function Test(testClass) {
 };
 
 var Assert = {
-    'isTrue': function (value) {
-        if (value != true) {
-            throw 'Value is not true';
+    isTrue(value) {
+        if (value !== true) {
+            throw new Error('Value is not true');
         }
     },
-    'match': function (expected, actual) {
+    match(expected, actual) {
         if (expected != actual) {
-            throw 'Expected value is (' + JSON.stringify(expected) + ') but is (' + JSON.stringify(actual) + ')';
+            throw new Error(`Expected value is (${JSON.stringify(expected)}) but is (${JSON.stringify(actual)})`);
         }
     },
-    'equals': (expected, actual) => {
+    equals(expected, actual) {
         if (expected !== actual) {
             throw new Error(`Assertion failed: expected ${expected}, but got ${actual}`);
         }
     },
-    'deepEquals': function (array1, array2) {
-        const result = (() => {
-            if (array1.length !== array2.length) {
-                return false;
-            }
+    deepEquals(array1, array2) {
+        if (!Array.isArray(array1) || !Array.isArray(array2)) {
+            throw new Error('Both arguments must be arrays');
+        }
+        if (array1.length !== array2.length) {
+            throw new Error(`Arrays have different lengths: ${array1.length} !== ${array2.length}`);
+        }
 
-            for (var i = 0; i < array1.length; i++) {
-                if (Array.isArray(array1[i]) && Array.isArray(array2[i])) {
-                    if (!Assert.deepEquals(array1[i], array2[i])) {
-                        return false;
-                    }
-                } else {
-                    const array1_str = JSON.stringify(array1[i]);
-                    const array2_str = JSON.stringify(array2[i]);
-                    if (array1_str !== array2_str) {
-                        return false;
-                    }
+        for (let i = 0; i < array1.length; i++) {
+            if (Array.isArray(array1[i]) && Array.isArray(array2[i])) {
+                this.deepEquals(array1[i], array2[i]);
+            } else {
+                const array1Str = JSON.stringify(array1[i]);
+                const array2Str = JSON.stringify(array2[i]);
+                if (array1Str !== array2Str) {
+                    throw new Error(`Arrays differ at index ${i}: ${array1Str} !== ${array2Str}`);
                 }
             }
-
-            return true;
-        })();
-        if (!result) {
-            throw `Expected value is (${JSON.stringify(array1)}) but is (${JSON.stringify(array2)})`;
         }
-        return result;
     }
 };
 
