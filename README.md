@@ -27,7 +27,7 @@ This repository contains a simple yet functional testing framework designed for 
   - `isTrue(value)`: Verifies that a value is `true`.
   - `match(expected, actual)`: Verifies that `expected` loosely equals `actual`.
   - `equals(expected, actual)`: Verifies that `expected` strictly equals `actual`.
-  - `deepEquals(array1, array2)`: Verifies deep equality of two arrays, including nested arrays.
+  - `deepEquals(obj1, obj2)`: Verifies deep equality of two arrays or objects, including nested arrays.
 
 - **Example Test Class** (`ExampleTest`)
 
