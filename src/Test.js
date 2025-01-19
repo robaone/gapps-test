@@ -48,25 +48,44 @@ var Assert = {
             throw new Error(`Assertion failed: expected ${expected}, but got ${actual}`);
         }
     },
-    deepEquals(array1, array2) {
-        if (!Array.isArray(array1) || !Array.isArray(array2)) {
-            throw new Error('Both arguments must be arrays');
+    deepEquals(obj1, obj2) {
+      // Check if both arguments are of the same type
+      if (typeof obj1 !== typeof obj2) {
+        throw new Error(`Objects are not the same type: ${typeof obj1} != ${typeof obj2}`);
+      }
+
+      // Handle arrays
+      if (Array.isArray(obj1) && Array.isArray(obj2)) {
+        if (obj1.length !== obj2.length) {
+          throw new Error(`Arrays have different lengths: ${obj1.length} !== ${obj2.length}`);
         }
-        if (array1.length !== array2.length) {
-            throw new Error(`Arrays have different lengths: ${array1.length} !== ${array2.length}`);
+        for (let i = 0; i < obj1.length; i++) {
+          if (!this.deepEquals(obj1[i], obj2[i])) {
+            throw new Error(`Expected value is (${JSON.stringify(obj1)}) but is (${JSON.stringify(obj2)})`);
+          }
+        }
+        return true;
+      }
+
+      // Handle objects
+      if (typeof obj1 === 'object' && obj1 !== null && typeof obj2 === 'object' && obj2 !== null) {
+        const keys1 = Object.keys(obj1);
+        const keys2 = Object.keys(obj2);
+
+        if (keys1.length !== keys2.length) {
+          throw new Error(`Objects have different number of keys: ${keys1.length} !== ${keys2.length}`);
         }
 
-        for (let i = 0; i < array1.length; i++) {
-            if (Array.isArray(array1[i]) && Array.isArray(array2[i])) {
-                this.deepEquals(array1[i], array2[i]);
-            } else {
-                const array1Str = JSON.stringify(array1[i]);
-                const array2Str = JSON.stringify(array2[i]);
-                if (array1Str !== array2Str) {
-                    throw new Error(`Arrays differ at index ${i}: ${array1Str} !== ${array2Str}`);
-                }
-            }
+        for (const key of keys1) {
+          if (!keys2.includes(key) || !this.deepEquals(obj1[key], obj2[key])) {
+            throw new Error(`Expected value is (${JSON.stringify(obj1)}) but is (${JSON.stringify(obj2)})`);
+          }
         }
+        return true;
+      }
+
+      // Handle primitive values
+      return obj1 === obj2;
     }
 };
 
