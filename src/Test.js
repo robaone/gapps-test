@@ -60,8 +60,10 @@ var Assert = {
           throw new Error(`Arrays have different lengths: ${obj1.length} !== ${obj2.length}`);
         }
         for (let i = 0; i < obj1.length; i++) {
-          if (!this.deepEquals(obj1[i], obj2[i])) {
-            throw new Error(`Expected value is (${JSON.stringify(obj1)}) but is (${JSON.stringify(obj2)})`);
+          try{
+            this.deepEquals(obj1[i], obj2[i]);
+          }catch(error) {
+            throw new Error(`Arrays differ at index ${i}: ${error.message}`);
           }
         }
         return true;
@@ -77,8 +79,13 @@ var Assert = {
         }
 
         for (const key of keys1) {
-          if (!keys2.includes(key) || !this.deepEquals(obj1[key], obj2[key])) {
-            throw new Error(`Expected value is (${JSON.stringify(obj1)}) but is (${JSON.stringify(obj2)})`);
+          if (!keys2.includes(key)) {
+            throw new Error(`Key "${key}" missing from second object`);
+          }
+          try {
+            this.deepEquals(obj1[key], obj2[key]);
+          } catch (error) {
+            throw new Error(`Objects differ at key "${key}": ${error.message}`);
           }
         }
         return true;
@@ -115,6 +122,11 @@ class ExampleTest {
         Logger.log('WHEN');
         Logger.log('THEN');
         Assert.isTrue(true);
+    }
+    test_testName3() {
+      const expected = {this: "that", the: "other"};
+      const actual = {this: "that", the: "other"};
+      Assert.deepEquals(expected,actual);
     }
 }
 
